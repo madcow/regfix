@@ -1,0 +1,4 @@
+bin/
+tools/build/
+tools/.vs/
+*.swp
