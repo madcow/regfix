@@ -25,6 +25,8 @@ RegCreateKeyExW_t OriginalRegCreateKeyExW = NULL;
 // Custom RegOpenKeyExW: Intercept registry calls and rewrite relevant subkeys
 LSTATUS WINAPI CustomRegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult)
 {
+	// TODO: Skip redundant compare by not checking for the full
+	// BASEPATH again but rather only for the additional SUBDIR
 	if (lstrcmpW(lpSubKey, SUBKEY_ORIGINAL_BASEPATH) == 0) {
 		lpSubKey = SUBKEY_REPLACEMENT_BASEPATH;
 	} else if (lstrcmpW(lpSubKey, SUBKEY_ORIGINAL_FULL) == 0) {
@@ -38,6 +40,8 @@ LSTATUS WINAPI CustomRegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions,
 LSTATUS WINAPI CustomRegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved, LPWSTR lpClass, DWORD dwOptions,
 	REGSAM samDesired, const LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition)
 {
+	// TODO: Skip redundant compare by not checking for the full
+	// BASEPATH again but rather only for the additional SUBDIR
 	if (lstrcmpW(lpSubKey, SUBKEY_ORIGINAL_BASEPATH) == 0) {
 		lpSubKey = SUBKEY_REPLACEMENT_BASEPATH;
 	} else if (lstrcmpW(lpSubKey, SUBKEY_ORIGINAL_FULL) == 0) {
@@ -75,9 +79,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
 	// Detach handler
 	case DLL_PROCESS_DETACH:
-		// If the DLL's entry-point function returns FALSE following a DLL_PROCESS_ATTACH
-		// notification, it receives a DLL_PROCESS_DETACH notification and the DLL is
-		// unloaded immediately. So all clean up code can be added here.
 		MH_DisableHook(MH_ALL_HOOKS);
 		MH_Uninitialize();
 		break;
